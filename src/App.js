@@ -3,6 +3,37 @@ import React, { useState, useEffect, useRef } from 'react';
 // ─── INITIAL DATA ────────────────────────────────────────────────────────────
 const ADMIN_CREDENTIALS = { username: "Samad", password: "Samadmohd21" };
 
+const SAMFIT_PRODUCTS = [
+  { id: "p1", name: "Oatmeal Bowl", emoji: "🥣", price: 349, swiggy: 429, zomato: 449, desc: "High-protein oats with banana & nuts. Clean fuel for your goals.", tag: "Best Seller", cal: 389, protein: 17 },
+  { id: "p2", name: "Peanut Butter Sandwich", emoji: "🥪", price: 279, swiggy: 349, zomato: 369, desc: "Whole wheat bread with natural PB & honey. Perfect pre-workout snack.", tag: "High Protein", cal: 420, protein: 18 },
+  { id: "p3", name: "Detox Water", emoji: "🫙", price: 149, swiggy: 199, zomato: 219, desc: "Lemon, mint & cucumber infused water. Cleanse & hydrate daily.", tag: "Refreshing", cal: 15, protein: 0 },
+  { id: "p4", name: "Protein Smoothie", emoji: "🥤", price: 299, swiggy: 379, zomato: 399, desc: "Banana, whey protein & almond milk blend. Post-workout recovery.", tag: "New", cal: 280, protein: 24 },
+  { id: "p5", name: "Grilled Chicken Bowl", emoji: "🍗", price: 399, swiggy: 499, zomato: 519, desc: "Lean grilled chicken with brown rice & veggies. Complete meal.", tag: "Popular", cal: 480, protein: 42 },
+];
+
+const SAMFIT_SERVICES = [
+  {
+    id: "s1", name: "Basic", emoji: "✂️",
+    price: 2500, tag: "Editing & Capturing",
+    color: "linear-gradient(135deg,#00FFB2,#00B8FF)",
+    features: ["Video Editing", "Video Capturing", "2 Revisions/month", "HD Quality Output", "Quick 48hr Turnaround"],
+  },
+  {
+    id: "s2", name: "Standard", emoji: "🎬",
+    price: 3500, tag: "Editing + Management",
+    color: "linear-gradient(135deg,#7B2FFF,#FF3CAC)",
+    features: ["Everything in Basic", "Social Media Management", "Content Strategy", "Post Scheduling", "Monthly Report"],
+    popular: true,
+  },
+  {
+    id: "s3", name: "Premium", emoji: "👑",
+    price: 5499, tag: "All Inclusive",
+    color: "linear-gradient(135deg,#FF6B35,#FF3CAC)",
+    originalPrice: 8000,
+    features: ["Everything in Standard", "Nutrition Plan", "Video Strategy", "Reel & Story Design", "WhatsApp Support 24/7", "Save ₹2,500+"],
+  },
+];
+
 const FOOD_DATABASE = [
   // Proteins
   { id: 1, name: "Chicken Breast (100g)", calories: 165, protein: 31, carbs: 0, fat: 3.6, category: "protein", emoji: "🍗" },
@@ -344,10 +375,41 @@ const css = `
   .fw-700 { font-weight: 700; }
   .font-bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
 
+  /* STORE */
+  .store-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+  .store-modal { background: var(--dark2); border: 1px solid var(--border); border-radius: 24px 24px 0 0; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 24px; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .store-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+  .product-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; gap: 14px; align-items: flex-start; transition: all 0.2s; }
+  .product-card:hover { border-color: rgba(0,255,178,0.3); background: rgba(0,255,178,0.04); }
+  .product-emoji { font-size: 36px; flex-shrink: 0; }
+  .product-tag { font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 20px; background: rgba(0,255,178,0.15); color: var(--neon); text-transform: uppercase; display: inline-block; margin-bottom: 4px; }
+  .product-price { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--neon); }
+  .product-compare { font-size: 11px; color: var(--muted); text-decoration: line-through; }
+  .product-save { font-size: 11px; color: #00FFB2; font-weight: 700; }
+  .store-fab { position: fixed; bottom: 80px; right: 20px; z-index: 150; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg,var(--neon),#00B8FF); border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,255,178,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .store-fab:hover { transform: scale(1.1); }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(8,12,20,0.95); border-top: 1px solid var(--border); backdrop-filter: blur(20px); display: flex; z-index: 100; }
+  .bottom-nav-item { flex: 1; padding: 10px 4px 14px; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; cursor: pointer; transition: color 0.2s; }
+  .bottom-nav-item.active { color: var(--neon); }
+  .bottom-nav-icon { font-size: 20px; }
+  /* SERVICES */
+  .service-card { border-radius: 20px; padding: 24px; border: 1px solid var(--border); background: var(--card); position: relative; transition: all 0.3s; }
+  .service-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+  .service-popular { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg,var(--neon2),var(--neon3)); color: white; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.5px; }
+  .service-price { font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; }
+  .service-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .service-feature:last-child { border-bottom: none; }
+  .contact-bar { display: flex; gap: 12px; margin-top: 24px; }
+  .wa-btn { flex: 1; padding: 14px; border-radius: 14px; border: none; background: #25D366; color: white; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+  .wa-btn:hover { background: #20ba57; transform: translateY(-2px); }
+  .ig-btn { flex: 1; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: white; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+  .ig-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+  .nav-logo-img { height: 36px; width: 36px; object-fit: contain; border-radius: 8px; }
   @media (max-width: 600px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .macro-ring-wrap { flex-direction: column; }
-    .page { padding: 16px; }
+    .page { padding: 16px; padding-bottom: 80px; }
     .nav { padding: 12px 16px; }
   }
 `;
@@ -448,10 +510,13 @@ function LoginPage({ onLogin, registeredUsers, onRegister }) {
   return (
     <div className="login-page">
       <div className="login-box">
-        <div className="fade-up">
-          <div className="login-title">FITFUEL</div>
-          <div className="login-sub">Track. Fuel. Transform. 🔥</div>
-        </div>
+          <div className="fade-up">
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+              <img src="/logo.png" alt="Samfit" style={{ height: 64, width: 64, objectFit: "contain", borderRadius: 14 }} onError={e => e.target.style.display='none'} />
+              <div className="login-title">SAMFIT</div>
+            </div>
+            <div className="login-sub">Track. Fuel. Transform. 🔥</div>
+          </div>
         <div className="card fade-up-d1" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div className="tabs">
             <button className={`tab${tab === "login" ? " active" : ""}`} onClick={() => { setTab("login"); setErr(""); setOk(""); }}>🔑 Login</button>
@@ -601,9 +666,10 @@ function OnboardPage({ onComplete }) {
 
 // ─── USER DASHBOARD ──────────────────────────────────────────────────────────
 function UserDashboard({ user, setUser, onLogout }) {
-  const [screen, setScreen] = useState("home"); // home | log | meals | profile
+  const [screen, setScreen] = useState("home"); // home | log | meals | store | services | profile
   const [todayFoods, setTodayFoods] = useState([]);
   const [selectedCat, setSelectedCat] = useState("all");
+  const [showStore, setShowStore] = useState(false);
 
   const macros = calcMacros(todayFoods);
   const target = user.caloricTarget || 2200;
@@ -618,13 +684,25 @@ function UserDashboard({ user, setUser, onLogout }) {
   const avatarColors = ["linear-gradient(135deg,#00FFB2,#00B8FF)", "linear-gradient(135deg,#FF3CAC,#7B2FFF)"];
   const avatarColor = avatarColors[0];
 
+  const bottomNav = [
+    { key: "home", icon: "🏠", label: "Home" },
+    { key: "log", icon: "📋", label: "Log" },
+    { key: "meals", icon: "🍽", label: "Plan" },
+    { key: "store", icon: "🛒", label: "Store" },
+    { key: "services", icon: "🎬", label: "Services" },
+    { key: "profile", icon: "👤", label: "Me" },
+  ];
+
   return (
     <div className="app">
       <style>{css}</style>
       <div className="bg-grid" /><div className="bg-orb1" /><div className="bg-orb2" />
       <div className="content">
         <nav className="nav">
-          <div className="nav-logo">FITFUEL</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img src="/logo.png" alt="Samfit" className="nav-logo-img" onError={e => e.target.style.display='none'} />
+            <div className="nav-logo">SAMFIT</div>
+          </div>
           <div className="nav-right">
             <span className="nav-user">{user.name}</span>
             <span className="nav-badge badge-user">USER</span>
@@ -632,14 +710,53 @@ function UserDashboard({ user, setUser, onLogout }) {
           </div>
         </nav>
 
-        {/* BOTTOM TAB BAR (top nav for screens) */}
-        <div style={{ padding: "12px 24px 0", maxWidth: 900, margin: "0 auto" }}>
-          <div className="tabs">
-            {[["home","🏠 Home"],["log","📋 Log Meal"],["meals","🍽 Meal Plan"],["profile","👤 Profile"]].map(([k,v]) => (
-              <button key={k} className={`tab${screen === k ? " active" : ""}`} onClick={() => setScreen(k)}>{v}</button>
-            ))}
+        {/* Store FAB button */}
+        <button className="store-fab" onClick={() => setShowStore(true)}>🛒</button>
+
+        {/* Store Modal */}
+        {showStore && (
+          <div className="store-modal-overlay" onClick={() => setShowStore(false)}>
+            <div className="store-modal" onClick={e => e.stopPropagation()}>
+              <div className="store-handle" />
+              <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28, letterSpacing: 1, marginBottom: 4 }}>Samfit Store 🛒</div>
+              <div className="text-muted" style={{ fontSize: 13, marginBottom: 20 }}>Cheaper than Swiggy & Zomato. Always fresh.</div>
+              <div className="flex flex-col gap-12">
+                {SAMFIT_PRODUCTS.map(p => (
+                  <div key={p.id} className="product-card">
+                    <div className="product-emoji">{p.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div className="product-tag">{p.tag}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{p.name}</div>
+                      <div className="text-muted" style={{ fontSize: 12, marginBottom: 8 }}>{p.desc}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 6 }}>🔥 {p.cal} kcal · 💪 {p.protein}g protein</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div className="product-price">₹{p.price}</div>
+                        <div>
+                          <div className="product-compare">Swiggy ₹{p.swiggy} · Zomato ₹{p.zomato}</div>
+                          <div className="product-save">You save ₹{p.swiggy - p.price}+</div>
+                        </div>
+                      </div>
+                    </div>
+                    <button className="btn btn-primary btn-sm" onClick={() => window.open(`https://wa.me/918088866834?text=Hi! I want to order ${p.name} (₹${p.price})`, '_blank')}>Order</button>
+                  </div>
+                ))}
+              </div>
+              <div className="contact-bar">
+                <button className="wa-btn" onClick={() => window.open('https://wa.me/918088866834?text=Hi! I want to order from Samfit Store', '_blank')}>📱 WhatsApp Order</button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* BOTTOM NAV */}
+        <nav className="bottom-nav">
+          {bottomNav.map(({ key, icon, label }) => (
+            <button key={key} className={`bottom-nav-item${screen === key ? " active" : ""}`} onClick={() => setScreen(key)}>
+              <span className="bottom-nav-icon">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </nav>
 
         {/* ── HOME ── */}
         {screen === "home" && (
@@ -775,6 +892,92 @@ function UserDashboard({ user, setUser, onLogout }) {
           </div>
         )}
 
+        {/* ── STORE ── */}
+        {screen === "store" && (
+          <div className="page">
+            <div className="section-title fade-up" style={{ marginBottom: 4 }}>Samfit Store 🛒</div>
+            <div className="text-muted fade-up" style={{ fontSize: 13, marginBottom: 20 }}>Healthier & cheaper than Swiggy/Zomato. Order directly!</div>
+            <div className="flex flex-col gap-12">
+              {SAMFIT_PRODUCTS.map((p, i) => (
+                <div key={p.id} className="product-card" style={{ animation: `fadeUp 0.4s ${i * 0.08}s ease both` }}>
+                  <div className="product-emoji">{p.emoji}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className="product-tag">{p.tag}</div>
+                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{p.name}</div>
+                    <div className="text-muted" style={{ fontSize: 12, marginBottom: 8 }}>{p.desc}</div>
+                    <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 8 }}>🔥 {p.cal} kcal · 💪 {p.protein}g protein</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+                      <div className="product-price">₹{p.price}</div>
+                      <div>
+                        <div className="product-compare">Swiggy ₹{p.swiggy} · Zomato ₹{p.zomato}</div>
+                        <div className="product-save">💰 You save ₹{p.swiggy - p.price}+</div>
+                      </div>
+                    </div>
+                  </div>
+                  <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={() => window.open(`https://wa.me/918088866834?text=Hi Samad! I want to order ${p.name} at ₹${p.price} from Samfit 🛒`, '_blank')}>Order →</button>
+                </div>
+              ))}
+            </div>
+            <div className="contact-bar fade-up-d3">
+              <button className="wa-btn" onClick={() => window.open('https://wa.me/918088866834?text=Hi Samad! I want to order from Samfit Store 🛒', '_blank')}>📱 WhatsApp to Order</button>
+              <button className="ig-btn" onClick={() => window.open('https://instagram.com/scrupulousmohd', '_blank')}>📸 Follow on Insta</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── SERVICES ── */}
+        {screen === "services" && (
+          <div className="page">
+            <div className="section-title fade-up" style={{ marginBottom: 4 }}>My Services 🎬</div>
+            <div className="text-muted fade-up" style={{ fontSize: 13, marginBottom: 20 }}>Video editing, social media management & more. Choose your plan!</div>
+            <div style={{ background: "linear-gradient(135deg,rgba(0,255,178,0.1),rgba(123,47,255,0.1))", border: "1px solid rgba(0,255,178,0.2)", borderRadius: 16, padding: 16, marginBottom: 20 }} className="fade-up-d1">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>🎁 Bundle Discount Available!</div>
+              <div className="text-muted" style={{ fontSize: 13 }}>Choose the Premium plan and save ₹2,500+ compared to booking services separately. Best value for creators!</div>
+            </div>
+            <div className="flex flex-col gap-16">
+              {SAMFIT_SERVICES.map((s, i) => (
+                <div key={s.id} className="service-card fade-up" style={{ animation: `fadeUp 0.4s ${i * 0.1}s ease both` }}>
+                  {s.popular && <div className="service-popular">⭐ Most Popular</div>}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: s.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{s.emoji}</div>
+                    <div>
+                      <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 22, letterSpacing: 1 }}>{s.name} Plan</div>
+                      <div className="text-muted" style={{ fontSize: 12 }}>{s.tag}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                    <div className="service-price" style={{ background: s.color, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>₹{s.price.toLocaleString()}</div>
+                    <div className="text-muted" style={{ fontSize: 13 }}>/month</div>
+                    {s.originalPrice && <div style={{ fontSize: 12, color: "var(--muted)", textDecoration: "line-through" }}>₹{s.originalPrice.toLocaleString()}</div>}
+                  </div>
+                  {s.originalPrice && <div style={{ fontSize: 12, color: "#00FFB2", fontWeight: 700, marginBottom: 16 }}>💰 Save ₹{(s.originalPrice - s.price).toLocaleString()} per month!</div>}
+                  <div className="flex flex-col" style={{ marginBottom: 20, marginTop: 12 }}>
+                    {s.features.map(f => (
+                      <div key={f} className="service-feature">
+                        <span style={{ color: "var(--neon)", fontWeight: 700 }}>✓</span>
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="btn btn-primary btn-full" onClick={() => window.open(`https://wa.me/918088866834?text=Hi Samad! I'm interested in the ${s.name} Plan (₹${s.price}/month) for ${s.tag}. Please share more details! 🎬`, '_blank')}>
+                    Book {s.name} Plan →
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="card fade-up-d3" style={{ marginTop: 20, textAlign: "center" }}>
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>👋 About Samad</div>
+              <div className="text-muted" style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
+                Professional content creator & social media manager helping brands grow. Specialising in fitness content, video editing, reel creation, and complete social media management.
+              </div>
+              <div className="contact-bar" style={{ marginTop: 0 }}>
+                <button className="wa-btn" onClick={() => window.open('https://wa.me/918088866834', '_blank')}>📱 WhatsApp</button>
+                <button className="ig-btn" onClick={() => window.open('https://instagram.com/scrupulousmohd', '_blank')}>📸 Instagram</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── PROFILE ── */}
         {screen === "profile" && (
           <div className="page">
@@ -840,7 +1043,10 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
       <div className="bg-grid" /><div className="bg-orb1" /><div className="bg-orb2" />
       <div className="content">
         <nav className="nav">
-          <div className="nav-logo">FITFUEL ⚡</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img src="/logo.png" alt="Samfit" className="nav-logo-img" onError={e => e.target.style.display='none'} />
+            <div className="nav-logo">SAMFIT ⚡</div>
+          </div>
           <div className="nav-right">
             <span className="nav-user">Administrator</span>
             <span className="nav-badge badge-admin">ADMIN</span>
