@@ -1,4 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc, collection, getDocs } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCTVdcaUbKASpIA5pgQ2Np9euwzcq-R6AU",
+  authDomain: "samfit-f897b.firebaseapp.com",
+  projectId: "samfit-f897b",
+  storageBucket: "samfit-f897b.firebasestorage.app",
+  messagingSenderId: "323875979769",
+  appId: "1:323875979769:web:5ea7ed4733e5894180bd28",
+  measurementId: "G-M0M1TL9BTJ"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 // ─── INITIAL DATA ────────────────────────────────────────────────────────────
 const ADMIN_CREDENTIALS = { username: "Samad", password: "Samadmohd21" };
@@ -1309,21 +1324,27 @@ export default function FitFuelApp() {
     try { const s = localStorage.getItem("samfit_user"); return s ? JSON.parse(s) : null; } catch { return null; }
   });
   const [needsOnboard, setNeedsOnboard] = useState(false);
-  const [registeredUsers, setRegisteredUsers] = useState(() => {
-    try { const s = localStorage.getItem("samfit_registered"); return s ? JSON.parse(s) : []; } catch { return []; }
-  });
-  const [newUserAlert, setNewUserAlert] = useState(null);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  function saveRegistered(users) {
-    setRegisteredUsers(users);
-    try { localStorage.setItem("samfit_registered", JSON.stringify(users)); } catch {}
-  }
+  // Load all users from Firebase on startup
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        const users = snapshot.docs.map(d => d.data());
+        setRegisteredUsers(users);
+      } catch(e) { console.log("Firebase load error", e); }
+      setLoading(false);
+    }
+    loadUsers();
+  }, []);
 
-  function handleRegister(newUser) {
-    const updated = [...registeredUsers, newUser];
-    saveRegistered(updated);
-    setNewUserAlert(newUser.name);
-    setTimeout(() => setNewUserAlert(null), 5000);
+  async function handleRegister(newUser) {
+    try {
+      await setDoc(doc(db, "users", newUser.id), newUser);
+      setRegisteredUsers(prev => [...prev, newUser]);
+    } catch(e) { console.log("Firebase save error", e); }
   }
 
   function handleLogin(res) {
@@ -1339,9 +1360,12 @@ export default function FitFuelApp() {
     else { setUserData(u); try { localStorage.setItem("samfit_user", JSON.stringify(u)); } catch {} }
   }
 
-  function handleOnboard(form) {
+  async function handleOnboard(form) {
     const u = { ...auth.data, ...form };
-    saveRegistered(registeredUsers.map(x => x.id === u.id ? u : x));
+    try {
+      await setDoc(doc(db, "users", u.id), u);
+      setRegisteredUsers(prev => prev.map(x => x.id === u.id ? u : x));
+    } catch(e) {}
     setAuth({ type: "user", data: u });
     setUserData(u);
     setNeedsOnboard(false);
@@ -1353,7 +1377,14 @@ export default function FitFuelApp() {
     try { localStorage.removeItem("samfit_auth"); localStorage.removeItem("samfit_user"); } catch {}
   }
 
-  const allUsers = [...DEMO_USERS, ...registeredUsers];
+  const allUsers = [...DEMO_USERS, ...registeredUsers.filter(u => !DEMO_USERS.find(d => d.id === u.id))];
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#080C14", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+      <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 48, background: "linear-gradient(135deg,#00FFB2,#7B2FFF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>SAMFIT</div>
+      <div style={{ color: "#00FFB2", fontSize: 14 }}>Loading...</div>
+    </div>
+  );
 
   if (!auth) return (
     <div className="app">
@@ -1365,7 +1396,7 @@ export default function FitFuelApp() {
     </div>
   );
 
-  if (auth.type === "admin") return <AdminDashboard onLogout={handleLogout} allUsers={allUsers} registeredUsers={registeredUsers} setRegisteredUsers={setRegisteredUsers} />;
+  if (auth.type === "admin") return <AdminDashboard onLogout={handleLogout} allUsers={allUsers} registeredUsers={registeredUsers} setRegisteredUsers={setRegisteredUsers} db={db} />;
 
   if (needsOnboard) return (
     <div className="app">
@@ -1377,5 +1408,5 @@ export default function FitFuelApp() {
     </div>
   );
 
-  return <UserDashboard user={userData || auth.data} setUser={setUserData} onLogout={handleLogout} />;
+  return <UserDashboard user={userData || auth.data} setUser={setUserData} onLogout={handleLogout} db={db} />;
 }
