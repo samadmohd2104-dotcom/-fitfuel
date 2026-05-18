@@ -727,6 +727,7 @@ function UserDashboard({ user, setUser, onLogout }) {
   const avatarColors = ["linear-gradient(135deg,#00FFB2,#00B8FF)", "linear-gradient(135deg,#FF3CAC,#7B2FFF)"];
   const avatarColor = avatarColors[0];
 
+  const [searchQuery, setSearchQuery] = useState("");
   const bottomNav = [
     { key: "home", icon: "🏠", label: "Home" },
     { key: "log", icon: "📋", label: "Log" },
@@ -882,11 +883,25 @@ function UserDashboard({ user, setUser, onLogout }) {
               <div className="section-title">Log Meal 📋</div>
               <div style={{ fontSize: 13, color: "var(--neon)" }}>{todayFoods.length} selected · {macros.cal} kcal</div>
             </div>
+            {/* Search bar */}
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <input
+                className="input"
+                placeholder="🔍 Search food..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: 16 }}
+              />
+            </div>
             <div className="tabs" style={{ marginBottom: 16 }}>
               {cats.map(c => <button key={c} className={`tab${selectedCat === c ? " active" : ""}`} onClick={() => setSelectedCat(c)} style={{ textTransform: "capitalize" }}>{c}</button>)}
             </div>
             <div className="flex flex-col gap-8">
-              {FOOD_DATABASE.filter(f => selectedCat === "all" || f.category === selectedCat).map(f => (
+              {FOOD_DATABASE.filter(f => {
+                const matchCat = selectedCat === "all" || f.category === selectedCat;
+                const matchSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+              }).map(f => (
                 <div key={f.id} className={`food-item${todayFoods.includes(f.id) ? " selected" : ""}`} onClick={() => toggleFood(f.id)}>
                   <span className="food-emoji">{f.emoji}</span>
                   <div className="food-info">
