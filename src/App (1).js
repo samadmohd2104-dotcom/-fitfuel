@@ -13,6 +13,13 @@ const SAMFIT_PRODUCTS = [
 
 const SAMFIT_SERVICES = [
   {
+    id: "s0", name: "Trainer Pass", emoji: "🏋️",
+    price: 299, tag: "Monthly Access",
+    color: "linear-gradient(135deg,#00FFB2,#7B2FFF)",
+    features: ["Full Workout Plans", "Diet Tracking Access", "Weekly Check-in with Samad", "Progress Monitoring", "WhatsApp Support"],
+    popular: true,
+  },
+  {
     id: "s1", name: "Basic", emoji: "✂️",
     price: 2500, tag: "Editing & Capturing",
     color: "linear-gradient(135deg,#00FFB2,#00B8FF)",
@@ -23,7 +30,6 @@ const SAMFIT_SERVICES = [
     price: 3500, tag: "Editing + Management",
     color: "linear-gradient(135deg,#7B2FFF,#FF3CAC)",
     features: ["Everything in Basic", "Social Media Management", "Content Strategy", "Post Scheduling", "Monthly Report"],
-    popular: true,
   },
   {
     id: "s3", name: "Premium", emoji: "👑",
@@ -33,6 +39,25 @@ const SAMFIT_SERVICES = [
     features: ["Everything in Standard", "Nutrition Plan", "Video Strategy", "Reel & Story Design", "WhatsApp Support 24/7", "Save ₹2,500+"],
   },
 ];
+
+const WORKOUTS = {
+  men: [
+    { name: "Burpees", sets: "4 x 15", burn: 120, emoji: "🔥", desc: "Full body explosive movement. Best for fat burn.", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80" },
+    { name: "Jump Squats", sets: "4 x 20", burn: 90, emoji: "🦵", desc: "Builds legs and burns belly fat fast.", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80" },
+    { name: "Push-Ups", sets: "4 x 25", burn: 70, emoji: "💪", desc: "Upper body strength and core stability.", img: "https://images.unsplash.com/photo-1598971457999-ca4ef48a9a71?w=400&q=80" },
+    { name: "Mountain Climbers", sets: "4 x 30s", burn: 100, emoji: "⛰️", desc: "Cardio + core. Burns calories rapidly.", img: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80" },
+    { name: "High Knees", sets: "4 x 45s", burn: 110, emoji: "🏃", desc: "Boosts heart rate. Great warm-up or finisher.", img: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&q=80" },
+    { name: "Plank", sets: "4 x 45s", burn: 50, emoji: "🧱", desc: "Core king. Tightens belly and improves posture.", img: "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?w=400&q=80" },
+  ],
+  women: [
+    { name: "Glute Bridges", sets: "4 x 20", burn: 60, emoji: "🍑", desc: "Tones glutes and strengthens lower back.", img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80" },
+    { name: "Sumo Squats", sets: "4 x 20", burn: 80, emoji: "🦵", desc: "Inner thigh + glute toner. Great for shape.", img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=80" },
+    { name: "Jumping Jacks", sets: "4 x 40", burn: 95, emoji: "⭐", desc: "Full body cardio. Burns fat all over.", img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80" },
+    { name: "Side Lunges", sets: "3 x 15 each", burn: 70, emoji: "🏃‍♀️", desc: "Tones thighs and improves flexibility.", img: "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&q=80" },
+    { name: "Hip Dips", sets: "3 x 20 each", burn: 55, emoji: "💃", desc: "Targets love handles and obliques.", img: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80" },
+    { name: "Donkey Kicks", sets: "3 x 20 each", burn: 60, emoji: "🦶", desc: "Perfect glute isolator. No equipment needed.", img: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=400&q=80" },
+  ],
+};
 
 const FOOD_DATABASE = [
   // Proteins
@@ -44,6 +69,11 @@ const FOOD_DATABASE = [
   { id: 6, name: "Salmon (100g)", calories: 208, protein: 20, carbs: 0, fat: 13, category: "protein", emoji: "🐠" },
   { id: 7, name: "Greek Yogurt (200g)", calories: 130, protein: 17, carbs: 6, fat: 4, category: "protein", emoji: "🥣" },
   { id: 8, name: "Tofu (100g)", calories: 76, protein: 8, carbs: 2, fat: 4, category: "protein", emoji: "⬜" },
+  { id: 22, name: "Turkey Breast (100g)", calories: 135, protein: 30, carbs: 0, fat: 1, category: "protein", emoji: "🦃" },
+  { id: 23, name: "Cottage Cheese (100g)", calories: 98, protein: 11, carbs: 3.4, fat: 4.3, category: "protein", emoji: "🍶" },
+  { id: 24, name: "Boiled Dal (1 cup)", calories: 116, protein: 9, carbs: 20, fat: 0.4, category: "protein", emoji: "🫘" },
+  { id: 25, name: "Rajma (1 cup)", calories: 225, protein: 15, carbs: 40, fat: 0.9, category: "protein", emoji: "🫘" },
+  { id: 26, name: "Sprouts (100g)", calories: 62, protein: 4.4, carbs: 11, fat: 0.4, category: "protein", emoji: "🌱" },
   // Carbs
   { id: 9, name: "Brown Rice (1 cup)", calories: 215, protein: 5, carbs: 45, fat: 1.8, category: "carbs", emoji: "🍚" },
   { id: 10, name: "Oats (100g)", calories: 389, protein: 17, carbs: 66, fat: 7, category: "carbs", emoji: "🌾" },
@@ -51,15 +81,28 @@ const FOOD_DATABASE = [
   { id: 12, name: "Banana (1 medium)", calories: 89, protein: 1, carbs: 23, fat: 0.3, category: "carbs", emoji: "🍌" },
   { id: 13, name: "Whole Wheat Bread (2 slices)", calories: 180, protein: 8, carbs: 36, fat: 2, category: "carbs", emoji: "🍞" },
   { id: 14, name: "Quinoa (100g cooked)", calories: 120, protein: 4, carbs: 21, fat: 2, category: "carbs", emoji: "🌿" },
+  { id: 27, name: "Chapati (2 medium)", calories: 212, protein: 6, carbs: 42, fat: 2.8, category: "carbs", emoji: "🫓" },
+  { id: 28, name: "Apple (1 medium)", calories: 95, protein: 0.5, carbs: 25, fat: 0.3, category: "carbs", emoji: "🍎" },
+  { id: 29, name: "Poha (1 cup)", calories: 158, protein: 3, carbs: 34, fat: 0.5, category: "carbs", emoji: "🍛" },
+  { id: 30, name: "Mango (100g)", calories: 60, protein: 0.8, carbs: 15, fat: 0.4, category: "carbs", emoji: "🥭" },
+  { id: 31, name: "Idli (3 pieces)", calories: 150, protein: 5, carbs: 30, fat: 0.6, category: "carbs", emoji: "🍚" },
   // Fats
   { id: 15, name: "Almonds (30g)", calories: 173, protein: 6, carbs: 6, fat: 15, category: "fat", emoji: "🌰" },
   { id: 16, name: "Peanut Butter (2 tbsp)", calories: 188, protein: 8, carbs: 6, fat: 16, category: "fat", emoji: "🥜" },
   { id: 17, name: "Avocado (half)", calories: 120, protein: 1.5, carbs: 6, fat: 11, category: "fat", emoji: "🥑" },
   { id: 18, name: "Olive Oil (1 tbsp)", calories: 119, protein: 0, carbs: 0, fat: 13.5, category: "fat", emoji: "🫒" },
+  { id: 32, name: "Walnuts (30g)", calories: 196, protein: 4.6, carbs: 4, fat: 19.6, category: "fat", emoji: "🌰" },
+  { id: 33, name: "Cashews (30g)", calories: 163, protein: 4.3, carbs: 9, fat: 13, category: "fat", emoji: "🥜" },
+  { id: 34, name: "Coconut Oil (1 tbsp)", calories: 120, protein: 0, carbs: 0, fat: 14, category: "fat", emoji: "🥥" },
   // Veggies
   { id: 19, name: "Broccoli (100g)", calories: 35, protein: 2.8, carbs: 7, fat: 0.4, category: "veggies", emoji: "🥦" },
   { id: 20, name: "Spinach (100g)", calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, category: "veggies", emoji: "🥬" },
   { id: 21, name: "Mixed Salad (150g)", calories: 25, protein: 2, carbs: 4, fat: 0.3, category: "veggies", emoji: "🥗" },
+  { id: 35, name: "Cucumber (100g)", calories: 16, protein: 0.7, carbs: 3.6, fat: 0.1, category: "veggies", emoji: "🥒" },
+  { id: 36, name: "Tomato (1 medium)", calories: 22, protein: 1.1, carbs: 4.8, fat: 0.2, category: "veggies", emoji: "🍅" },
+  { id: 37, name: "Carrot (100g)", calories: 41, protein: 0.9, carbs: 10, fat: 0.2, category: "veggies", emoji: "🥕" },
+  { id: 38, name: "Mushrooms (100g)", calories: 22, protein: 3.1, carbs: 3.3, fat: 0.3, category: "veggies", emoji: "🍄" },
+  { id: 39, name: "Bell Pepper (1 medium)", calories: 31, protein: 1, carbs: 6, fat: 0.3, category: "veggies", emoji: "🫑" },
 ];
 
 const MEAL_PLANS = {
@@ -688,6 +731,7 @@ function UserDashboard({ user, setUser, onLogout }) {
     { key: "home", icon: "🏠", label: "Home" },
     { key: "log", icon: "📋", label: "Log" },
     { key: "meals", icon: "🍽", label: "Plan" },
+    { key: "workout", icon: "💪", label: "Workout" },
     { key: "store", icon: "🛒", label: "Store" },
     { key: "services", icon: "🎬", label: "Services" },
     { key: "profile", icon: "👤", label: "Me" },
@@ -889,6 +933,43 @@ function UserDashboard({ user, setUser, onLogout }) {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── WORKOUT ── */}
+        {screen === "workout" && (
+          <div className="page">
+            <div className="section-title fade-up" style={{ marginBottom: 4 }}>Workout Plan 💪</div>
+            <div className="text-muted fade-up" style={{ fontSize: 13, marginBottom: 16 }}>Weight loss exercises — no equipment needed!</div>
+            <div className="tabs fade-up-d1" style={{ marginBottom: 20 }}>
+              {[["men","🧔 Men"],["women","👩 Women"]].map(([k,v]) => (
+                <button key={k} className={`tab${(selectedCat === k || (!["men","women"].includes(selectedCat) && k === "men")) ? " active" : ""}`} onClick={() => setSelectedCat(k)}>{v}</button>
+              ))}
+            </div>
+            <div className="flex flex-col gap-16">
+              {(WORKOUTS[["men","women"].includes(selectedCat) ? selectedCat : "men"]).map((w, i) => (
+                <div key={i} className="card card-3d fade-up" style={{ animation: `fadeUp 0.4s ${i*0.08}s ease both`, padding: 0, overflow: "hidden" }}>
+                  <img src={w.img} alt={w.name} style={{ width: "100%", height: 180, objectFit: "cover" }} onError={e => { e.target.style.display='none'; }} />
+                  <div style={{ padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                      <div>
+                        <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 22, letterSpacing: 1 }}>{w.emoji} {w.name}</div>
+                        <div className="text-muted" style={{ fontSize: 13 }}>{w.desc}</div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 20, color: "var(--neon)" }}>{w.sets}</div>
+                        <div style={{ fontSize: 11, color: "var(--muted)" }}>🔥 ~{w.burn} cal</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="card fade-up-d3" style={{ marginTop: 20, textAlign: "center" }}>
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>🏋️ Want a Personal Plan?</div>
+              <div className="text-muted" style={{ fontSize: 13, marginBottom: 16 }}>Get the Trainer Pass at just ₹299/month for custom workouts & diet tracking with Samad!</div>
+              <button className="wa-btn" onClick={() => window.open('https://wa.me/918088866834?text=Hi Samad! I want the Trainer Pass (₹299/month) 🏋️', '_blank')}>📱 Get Trainer Pass ₹299/mo</button>
+            </div>
           </div>
         )}
 
@@ -1206,32 +1287,56 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function FitFuelApp() {
-  const [auth, setAuth] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [auth, setAuth] = useState(() => {
+    try { const s = localStorage.getItem("samfit_auth"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const [userData, setUserData] = useState(() => {
+    try { const s = localStorage.getItem("samfit_user"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
   const [needsOnboard, setNeedsOnboard] = useState(false);
-  const [registeredUsers, setRegisteredUsers] = useState([]); // users who signed up in-session
+  const [registeredUsers, setRegisteredUsers] = useState(() => {
+    try { const s = localStorage.getItem("samfit_registered"); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [newUserAlert, setNewUserAlert] = useState(null);
+
+  function saveRegistered(users) {
+    setRegisteredUsers(users);
+    try { localStorage.setItem("samfit_registered", JSON.stringify(users)); } catch {}
+  }
 
   function handleRegister(newUser) {
-    setRegisteredUsers(prev => [...prev, newUser]);
+    const updated = [...registeredUsers, newUser];
+    saveRegistered(updated);
+    setNewUserAlert(newUser.name);
+    setTimeout(() => setNewUserAlert(null), 5000);
   }
 
   function handleLogin(res) {
-    if (res.type === "admin") { setAuth({ type: "admin" }); return; }
+    if (res.type === "admin") {
+      setAuth({ type: "admin" });
+      try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "admin" })); } catch {}
+      return;
+    }
     const u = res.data;
-    if (!u.caloricTarget) { setAuth({ type: "user", data: u }); setNeedsOnboard(true); }
-    else { setAuth({ type: "user", data: u }); setUserData(u); }
+    setAuth({ type: "user", data: u });
+    try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "user", data: u })); } catch {}
+    if (!u.caloricTarget) { setNeedsOnboard(true); }
+    else { setUserData(u); try { localStorage.setItem("samfit_user", JSON.stringify(u)); } catch {} }
   }
 
   function handleOnboard(form) {
     const u = { ...auth.data, ...form };
-    // Update registered users list so admin can see updated info
-    setRegisteredUsers(prev => prev.map(x => x.id === u.id ? u : x));
+    saveRegistered(registeredUsers.map(x => x.id === u.id ? u : x));
     setAuth({ type: "user", data: u });
     setUserData(u);
     setNeedsOnboard(false);
+    try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "user", data: u })); localStorage.setItem("samfit_user", JSON.stringify(u)); } catch {}
   }
 
-  function handleLogout() { setAuth(null); setUserData(null); setNeedsOnboard(false); }
+  function handleLogout() {
+    setAuth(null); setUserData(null); setNeedsOnboard(false);
+    try { localStorage.removeItem("samfit_auth"); localStorage.removeItem("samfit_user"); } catch {}
+  }
 
   const allUsers = [...DEMO_USERS, ...registeredUsers];
 
