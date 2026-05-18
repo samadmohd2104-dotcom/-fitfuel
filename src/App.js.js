@@ -1,4 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc, collection, getDocs } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCTVdcaUbKASpIA5pgQ2Np9euwzcq-R6AU",
+  authDomain: "samfit-f897b.firebaseapp.com",
+  projectId: "samfit-f897b",
+  storageBucket: "samfit-f897b.firebasestorage.app",
+  messagingSenderId: "323875979769",
+  appId: "1:323875979769:web:5ea7ed4733e5894180bd28",
+  measurementId: "G-M0M1TL9BTJ"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 // ─── INITIAL DATA ────────────────────────────────────────────────────────────
 const ADMIN_CREDENTIALS = { username: "Samad", password: "Samadmohd21" };
@@ -13,6 +28,13 @@ const SAMFIT_PRODUCTS = [
 
 const SAMFIT_SERVICES = [
   {
+    id: "s0", name: "Trainer Pass", emoji: "🏋️",
+    price: 299, tag: "Monthly Access",
+    color: "linear-gradient(135deg,#00FFB2,#7B2FFF)",
+    features: ["Full Workout Plans", "Diet Tracking Access", "Weekly Check-in with Samad", "Progress Monitoring", "WhatsApp Support"],
+    popular: true,
+  },
+  {
     id: "s1", name: "Basic", emoji: "✂️",
     price: 2500, tag: "Editing & Capturing",
     color: "linear-gradient(135deg,#00FFB2,#00B8FF)",
@@ -23,7 +45,6 @@ const SAMFIT_SERVICES = [
     price: 3500, tag: "Editing + Management",
     color: "linear-gradient(135deg,#7B2FFF,#FF3CAC)",
     features: ["Everything in Basic", "Social Media Management", "Content Strategy", "Post Scheduling", "Monthly Report"],
-    popular: true,
   },
   {
     id: "s3", name: "Premium", emoji: "👑",
@@ -33,6 +54,25 @@ const SAMFIT_SERVICES = [
     features: ["Everything in Standard", "Nutrition Plan", "Video Strategy", "Reel & Story Design", "WhatsApp Support 24/7", "Save ₹2,500+"],
   },
 ];
+
+const WORKOUTS = {
+  men: [
+    { name: "Burpees", sets: "4 x 15", burn: 120, emoji: "🔥", desc: "Full body explosive movement. Best for fat burn.", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80" },
+    { name: "Jump Squats", sets: "4 x 20", burn: 90, emoji: "🦵", desc: "Builds legs and burns belly fat fast.", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80" },
+    { name: "Push-Ups", sets: "4 x 25", burn: 70, emoji: "💪", desc: "Upper body strength and core stability.", img: "https://images.unsplash.com/photo-1598971457999-ca4ef48a9a71?w=400&q=80" },
+    { name: "Mountain Climbers", sets: "4 x 30s", burn: 100, emoji: "⛰️", desc: "Cardio + core. Burns calories rapidly.", img: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80" },
+    { name: "High Knees", sets: "4 x 45s", burn: 110, emoji: "🏃", desc: "Boosts heart rate. Great warm-up or finisher.", img: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&q=80" },
+    { name: "Plank", sets: "4 x 45s", burn: 50, emoji: "🧱", desc: "Core king. Tightens belly and improves posture.", img: "https://images.unsplash.com/photo-1566241142559-40e1dab266c6?w=400&q=80" },
+  ],
+  women: [
+    { name: "Glute Bridges", sets: "4 x 20", burn: 60, emoji: "🍑", desc: "Tones glutes and strengthens lower back.", img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80" },
+    { name: "Sumo Squats", sets: "4 x 20", burn: 80, emoji: "🦵", desc: "Inner thigh + glute toner. Great for shape.", img: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=80" },
+    { name: "Jumping Jacks", sets: "4 x 40", burn: 95, emoji: "⭐", desc: "Full body cardio. Burns fat all over.", img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80" },
+    { name: "Side Lunges", sets: "3 x 15 each", burn: 70, emoji: "🏃‍♀️", desc: "Tones thighs and improves flexibility.", img: "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&q=80" },
+    { name: "Hip Dips", sets: "3 x 20 each", burn: 55, emoji: "💃", desc: "Targets love handles and obliques.", img: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80" },
+    { name: "Donkey Kicks", sets: "3 x 20 each", burn: 60, emoji: "🦶", desc: "Perfect glute isolator. No equipment needed.", img: "https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=400&q=80" },
+  ],
+};
 
 const FOOD_DATABASE = [
   // Proteins
@@ -44,6 +84,11 @@ const FOOD_DATABASE = [
   { id: 6, name: "Salmon (100g)", calories: 208, protein: 20, carbs: 0, fat: 13, category: "protein", emoji: "🐠" },
   { id: 7, name: "Greek Yogurt (200g)", calories: 130, protein: 17, carbs: 6, fat: 4, category: "protein", emoji: "🥣" },
   { id: 8, name: "Tofu (100g)", calories: 76, protein: 8, carbs: 2, fat: 4, category: "protein", emoji: "⬜" },
+  { id: 22, name: "Turkey Breast (100g)", calories: 135, protein: 30, carbs: 0, fat: 1, category: "protein", emoji: "🦃" },
+  { id: 23, name: "Cottage Cheese (100g)", calories: 98, protein: 11, carbs: 3.4, fat: 4.3, category: "protein", emoji: "🍶" },
+  { id: 24, name: "Boiled Dal (1 cup)", calories: 116, protein: 9, carbs: 20, fat: 0.4, category: "protein", emoji: "🫘" },
+  { id: 25, name: "Rajma (1 cup)", calories: 225, protein: 15, carbs: 40, fat: 0.9, category: "protein", emoji: "🫘" },
+  { id: 26, name: "Sprouts (100g)", calories: 62, protein: 4.4, carbs: 11, fat: 0.4, category: "protein", emoji: "🌱" },
   // Carbs
   { id: 9, name: "Brown Rice (1 cup)", calories: 215, protein: 5, carbs: 45, fat: 1.8, category: "carbs", emoji: "🍚" },
   { id: 10, name: "Oats (100g)", calories: 389, protein: 17, carbs: 66, fat: 7, category: "carbs", emoji: "🌾" },
@@ -51,15 +96,28 @@ const FOOD_DATABASE = [
   { id: 12, name: "Banana (1 medium)", calories: 89, protein: 1, carbs: 23, fat: 0.3, category: "carbs", emoji: "🍌" },
   { id: 13, name: "Whole Wheat Bread (2 slices)", calories: 180, protein: 8, carbs: 36, fat: 2, category: "carbs", emoji: "🍞" },
   { id: 14, name: "Quinoa (100g cooked)", calories: 120, protein: 4, carbs: 21, fat: 2, category: "carbs", emoji: "🌿" },
+  { id: 27, name: "Chapati (2 medium)", calories: 212, protein: 6, carbs: 42, fat: 2.8, category: "carbs", emoji: "🫓" },
+  { id: 28, name: "Apple (1 medium)", calories: 95, protein: 0.5, carbs: 25, fat: 0.3, category: "carbs", emoji: "🍎" },
+  { id: 29, name: "Poha (1 cup)", calories: 158, protein: 3, carbs: 34, fat: 0.5, category: "carbs", emoji: "🍛" },
+  { id: 30, name: "Mango (100g)", calories: 60, protein: 0.8, carbs: 15, fat: 0.4, category: "carbs", emoji: "🥭" },
+  { id: 31, name: "Idli (3 pieces)", calories: 150, protein: 5, carbs: 30, fat: 0.6, category: "carbs", emoji: "🍚" },
   // Fats
   { id: 15, name: "Almonds (30g)", calories: 173, protein: 6, carbs: 6, fat: 15, category: "fat", emoji: "🌰" },
   { id: 16, name: "Peanut Butter (2 tbsp)", calories: 188, protein: 8, carbs: 6, fat: 16, category: "fat", emoji: "🥜" },
   { id: 17, name: "Avocado (half)", calories: 120, protein: 1.5, carbs: 6, fat: 11, category: "fat", emoji: "🥑" },
   { id: 18, name: "Olive Oil (1 tbsp)", calories: 119, protein: 0, carbs: 0, fat: 13.5, category: "fat", emoji: "🫒" },
+  { id: 32, name: "Walnuts (30g)", calories: 196, protein: 4.6, carbs: 4, fat: 19.6, category: "fat", emoji: "🌰" },
+  { id: 33, name: "Cashews (30g)", calories: 163, protein: 4.3, carbs: 9, fat: 13, category: "fat", emoji: "🥜" },
+  { id: 34, name: "Coconut Oil (1 tbsp)", calories: 120, protein: 0, carbs: 0, fat: 14, category: "fat", emoji: "🥥" },
   // Veggies
   { id: 19, name: "Broccoli (100g)", calories: 35, protein: 2.8, carbs: 7, fat: 0.4, category: "veggies", emoji: "🥦" },
   { id: 20, name: "Spinach (100g)", calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, category: "veggies", emoji: "🥬" },
   { id: 21, name: "Mixed Salad (150g)", calories: 25, protein: 2, carbs: 4, fat: 0.3, category: "veggies", emoji: "🥗" },
+  { id: 35, name: "Cucumber (100g)", calories: 16, protein: 0.7, carbs: 3.6, fat: 0.1, category: "veggies", emoji: "🥒" },
+  { id: 36, name: "Tomato (1 medium)", calories: 22, protein: 1.1, carbs: 4.8, fat: 0.2, category: "veggies", emoji: "🍅" },
+  { id: 37, name: "Carrot (100g)", calories: 41, protein: 0.9, carbs: 10, fat: 0.2, category: "veggies", emoji: "🥕" },
+  { id: 38, name: "Mushrooms (100g)", calories: 22, protein: 3.1, carbs: 3.3, fat: 0.3, category: "veggies", emoji: "🍄" },
+  { id: 39, name: "Bell Pepper (1 medium)", calories: 31, protein: 1, carbs: 6, fat: 0.3, category: "veggies", emoji: "🫑" },
 ];
 
 const MEAL_PLANS = {
@@ -665,17 +723,66 @@ function OnboardPage({ onComplete }) {
 }
 
 // ─── USER DASHBOARD ──────────────────────────────────────────────────────────
-function UserDashboard({ user, setUser, onLogout }) {
-  const [screen, setScreen] = useState("home"); // home | log | meals | store | services | profile
+function UserDashboard({ user, setUser, onLogout, db }) {
+  const [screen, setScreen] = useState("home");
   const [todayFoods, setTodayFoods] = useState([]);
   const [selectedCat, setSelectedCat] = useState("all");
   const [showStore, setShowStore] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [logLoaded, setLogLoaded] = useState(false);
 
   const macros = calcMacros(todayFoods);
   const target = user.caloricTarget || 2200;
   const planFoods = MEAL_PLANS[user.goal] || {};
-
   const cats = ["all", "protein", "carbs", "fat", "veggies"];
+  const today = todayStr();
+
+  // Load today's food log from Firebase on mount
+  useEffect(() => {
+    async function loadTodayLog() {
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        const fbUser = snapshot.docs.map(d => d.data()).find(u => u.id === user.id);
+        if (fbUser && fbUser.log) {
+          const todayLog = fbUser.log.find(l => l.date === today);
+          if (todayLog && todayLog.foods) {
+            setTodayFoods(todayLog.foods);
+          }
+        }
+      } catch(e) { console.log("Load log error", e); }
+      setLogLoaded(true);
+    }
+    loadTodayLog();
+  }, [user.id]);
+
+  // Save food log to Firebase whenever todayFoods changes
+  useEffect(() => {
+    if (!logLoaded) return;
+    async function saveLog() {
+      setSaving(true);
+      try {
+        const m = calcMacros(todayFoods);
+        const newEntry = {
+          date: today,
+          foods: todayFoods,
+          totalCal: Math.round(m.cal),
+          totalProt: Math.round(m.prot),
+          totalCarbs: Math.round(m.carbs),
+          totalFat: Math.round(m.fat),
+        };
+        const snapshot = await getDocs(collection(db, "users"));
+        const fbUser = snapshot.docs.map(d => d.data()).find(u => u.id === user.id);
+        const existingLog = (fbUser && fbUser.log) ? fbUser.log : (user.log || []);
+        const updatedLog = [
+          ...existingLog.filter(l => l.date !== today),
+          newEntry,
+        ];
+        await setDoc(doc(db, "users", user.id), { ...user, log: updatedLog });
+      } catch(e) { console.log("Save log error", e); }
+      setSaving(false);
+    }
+    saveLog();
+  }, [todayFoods, logLoaded]);
 
   function toggleFood(id) {
     setTodayFoods(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -684,10 +791,12 @@ function UserDashboard({ user, setUser, onLogout }) {
   const avatarColors = ["linear-gradient(135deg,#00FFB2,#00B8FF)", "linear-gradient(135deg,#FF3CAC,#7B2FFF)"];
   const avatarColor = avatarColors[0];
 
+  const [searchQuery, setSearchQuery] = useState("");
   const bottomNav = [
     { key: "home", icon: "🏠", label: "Home" },
     { key: "log", icon: "📋", label: "Log" },
     { key: "meals", icon: "🍽", label: "Plan" },
+    { key: "workout", icon: "💪", label: "Workout" },
     { key: "store", icon: "🛒", label: "Store" },
     { key: "services", icon: "🎬", label: "Services" },
     { key: "profile", icon: "👤", label: "Me" },
@@ -836,13 +945,27 @@ function UserDashboard({ user, setUser, onLogout }) {
           <div className="page">
             <div className="section-header">
               <div className="section-title">Log Meal 📋</div>
-              <div style={{ fontSize: 13, color: "var(--neon)" }}>{todayFoods.length} selected · {macros.cal} kcal</div>
+              <div style={{ fontSize: 13, color: "var(--neon)" }}>{todayFoods.length} selected · {macros.cal} kcal {saving ? "💾 Saving..." : logLoaded ? "✅ Saved" : ""}</div>
+            </div>
+            {/* Search bar */}
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <input
+                className="input"
+                placeholder="🔍 Search food..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: 16 }}
+              />
             </div>
             <div className="tabs" style={{ marginBottom: 16 }}>
               {cats.map(c => <button key={c} className={`tab${selectedCat === c ? " active" : ""}`} onClick={() => setSelectedCat(c)} style={{ textTransform: "capitalize" }}>{c}</button>)}
             </div>
             <div className="flex flex-col gap-8">
-              {FOOD_DATABASE.filter(f => selectedCat === "all" || f.category === selectedCat).map(f => (
+              {FOOD_DATABASE.filter(f => {
+                const matchCat = selectedCat === "all" || f.category === selectedCat;
+                const matchSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCat && matchSearch;
+              }).map(f => (
                 <div key={f.id} className={`food-item${todayFoods.includes(f.id) ? " selected" : ""}`} onClick={() => toggleFood(f.id)}>
                   <span className="food-emoji">{f.emoji}</span>
                   <div className="food-info">
@@ -889,6 +1012,43 @@ function UserDashboard({ user, setUser, onLogout }) {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── WORKOUT ── */}
+        {screen === "workout" && (
+          <div className="page">
+            <div className="section-title fade-up" style={{ marginBottom: 4 }}>Workout Plan 💪</div>
+            <div className="text-muted fade-up" style={{ fontSize: 13, marginBottom: 16 }}>Weight loss exercises — no equipment needed!</div>
+            <div className="tabs fade-up-d1" style={{ marginBottom: 20 }}>
+              {[["men","🧔 Men"],["women","👩 Women"]].map(([k,v]) => (
+                <button key={k} className={`tab${(selectedCat === k || (!["men","women"].includes(selectedCat) && k === "men")) ? " active" : ""}`} onClick={() => setSelectedCat(k)}>{v}</button>
+              ))}
+            </div>
+            <div className="flex flex-col gap-16">
+              {(WORKOUTS[["men","women"].includes(selectedCat) ? selectedCat : "men"]).map((w, i) => (
+                <div key={i} className="card card-3d fade-up" style={{ animation: `fadeUp 0.4s ${i*0.08}s ease both`, padding: 0, overflow: "hidden" }}>
+                  <img src={w.img} alt={w.name} style={{ width: "100%", height: 180, objectFit: "cover" }} onError={e => { e.target.style.display='none'; }} />
+                  <div style={{ padding: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                      <div>
+                        <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 22, letterSpacing: 1 }}>{w.emoji} {w.name}</div>
+                        <div className="text-muted" style={{ fontSize: 13 }}>{w.desc}</div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 20, color: "var(--neon)" }}>{w.sets}</div>
+                        <div style={{ fontSize: 11, color: "var(--muted)" }}>🔥 ~{w.burn} cal</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="card fade-up-d3" style={{ marginTop: 20, textAlign: "center" }}>
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>🏋️ Want a Personal Plan?</div>
+              <div className="text-muted" style={{ fontSize: 13, marginBottom: 16 }}>Get the Trainer Pass at just ₹299/month for custom workouts & diet tracking with Samad!</div>
+              <button className="wa-btn" onClick={() => window.open('https://wa.me/918088866834?text=Hi Samad! I want the Trainer Pass (₹299/month) 🏋️', '_blank')}>📱 Get Trainer Pass ₹299/mo</button>
+            </div>
           </div>
         )}
 
@@ -1007,7 +1167,7 @@ function UserDashboard({ user, setUser, onLogout }) {
 }
 
 // ─── ADMIN DASHBOARD ─────────────────────────────────────────────────────────
-function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, setRegisteredUsers }) {
+function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, setRegisteredUsers, db }) {
   const [screen, setScreen] = useState("overview");
   const [users, setUsers] = useState(initialUsers);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -1016,30 +1176,104 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
   const [newUser, setNewUser] = useState({ name: "", email: "", password: "", goal: "Weight Gain", weight: "", goalWeight: "", height: "", age: "" });
   const [addErr, setAddErr] = useState("");
   const [addOk, setAddOk] = useState(false);
+  const [fbLoading, setFbLoading] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
 
-  function removeUser(id) { setUsers(u => u.filter(x => x.id !== id)); if (selectedUser?.id === id) { setSelectedUser(null); setScreen("overview"); } }
+  // Real-time refresh from Firebase
+  async function refreshUsersFromFirebase() {
+    setFbLoading(true);
+    try {
+      const snapshot = await getDocs(collection(db, "users"));
+      const fbUsers = snapshot.docs.map(d => d.data());
+      // Merge: Firebase users take priority over DEMO_USERS, deduplicate by id
+      const merged = [
+        ...DEMO_USERS.filter(d => !fbUsers.find(f => f.id === d.id)),
+        ...fbUsers,
+      ];
+      setUsers(merged);
+      setLastRefresh(new Date());
+    } catch(e) { console.log("Firebase refresh error", e); }
+    setFbLoading(false);
+  }
 
-  function sendMessage() {
-    setUsers(u => u.map(x => x.id === selectedUser.id ? { ...x, adminMessage: msgDraft } : x));
-    setSelectedUser(u => ({ ...u, adminMessage: msgDraft }));
+  useEffect(() => { refreshUsersFromFirebase(); }, []);
+
+  function getTodayLog(u) {
+    if (!u.log || u.log.length === 0) return null;
+    return u.log.find(l => l.date === todayStr()) || null;
+  }
+
+  function getCalorieProgress(u) {
+    const todayLog = getTodayLog(u);
+    if (!todayLog || !u.caloricTarget) return 0;
+    return Math.min(100, Math.round((todayLog.totalCal / u.caloricTarget) * 100));
+  }
+
+  function isActiveToday(u) {
+    return !!getTodayLog(u);
+  }
+
+  function getLastSeen(u) {
+    if (!u.log || u.log.length === 0) return "Never logged";
+    const sorted = [...u.log].sort((a, b) => b.date.localeCompare(a.date));
+    const last = sorted[0].date;
+    if (last === todayStr()) return "Active today ✅";
+    const diff = Math.floor((new Date(todayStr()) - new Date(last)) / 86400000);
+    return `${diff} day${diff !== 1 ? "s" : ""} ago`;
+  }
+
+  function removeUser(id) {
+    setUsers(u => u.filter(x => x.id !== id));
+    if (selectedUser?.id === id) { setSelectedUser(null); setScreen("users"); }
+  }
+
+  async function sendMessage() {
+    const updated = { ...selectedUser, adminMessage: msgDraft };
+    try {
+      await setDoc(doc(db, "users", selectedUser.id), updated);
+    } catch(e) {}
+    setUsers(u => u.map(x => x.id === selectedUser.id ? updated : x));
+    setSelectedUser(updated);
     setMsgSent(true);
     setTimeout(() => setMsgSent(false), 2500);
   }
 
-  function addUser() {
+  async function addUser() {
     if (!newUser.name || !newUser.email || !newUser.password) { setAddErr("Name, email and password required"); return; }
     const u = { ...newUser, id: "u" + Date.now(), weight: +newUser.weight || 70, goalWeight: +newUser.goalWeight || 70, height: +newUser.height || 170, age: +newUser.age || 25, joined: todayStr(), active: true, log: [], adminMessage: "" };
+    try { await setDoc(doc(db, "users", u.id), u); } catch(e) {}
     setUsers(prev => [...prev, u]);
     setNewUser({ name: "", email: "", password: "", goal: "Weight Gain", weight: "", goalWeight: "", height: "", age: "" });
     setAddErr(""); setAddOk(true);
     setTimeout(() => setAddOk(false), 2500);
   }
 
-  const totalCal = users.reduce((a, u) => a + (u.log[0]?.totalCal || 0), 0);
+  const activeToday = users.filter(u => isActiveToday(u));
+  const totalCal = users.reduce((a, u) => { const l = getTodayLog(u); return a + (l ? l.totalCal : 0); }, 0);
+  const avgCal = activeToday.length > 0 ? Math.round(totalCal / activeToday.length) : 0;
+
+  const adminCss = `
+    .progress-bar-track { background: rgba(255,255,255,0.07); border-radius: 99px; height: 8px; width: 100%; overflow: hidden; margin-top: 6px; }
+    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .status-active { background: #00FFB2; box-shadow: 0 0 6px #00FFB2; }
+    .status-inactive { background: rgba(255,255,255,0.25); }
+    .user-card-full { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: all 0.25s; cursor: pointer; }
+    .user-card-full:hover { border-color: rgba(0,255,178,0.3); box-shadow: 0 0 24px rgba(0,255,178,0.1); }
+    .refresh-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; background: rgba(0,255,178,0.1); border: 1px solid rgba(0,255,178,0.3); color: var(--neon); font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Outfit',sans-serif; transition: all 0.2s; }
+    .refresh-btn:hover { background: rgba(0,255,178,0.2); }
+    .user-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .user-detail-tile { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .user-detail-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 4px; }
+    .user-detail-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--neon); }
+    .macro-pill { display: inline-flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 8px 14px; min-width: 70px; }
+    .macro-pill-val { font-weight: 700; font-size: 16px; }
+    .macro-pill-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+  `;
 
   return (
     <div className="app">
-      <style>{css}</style>
+      <style>{css}{adminCss}</style>
       <div className="bg-grid" /><div className="bg-orb1" /><div className="bg-orb2" />
       <div className="content">
         <nav className="nav">
@@ -1065,9 +1299,19 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
         {/* ── OVERVIEW ── */}
         {screen === "overview" && (
           <div className="page">
-            <div className="section-title fade-up" style={{ marginBottom: 20 }}>Dashboard Overview 📊</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div className="section-title fade-up">Dashboard Overview 📊</div>
+              <button className="refresh-btn" onClick={refreshUsersFromFirebase} disabled={fbLoading}>
+                {fbLoading ? "⏳ Syncing..." : "🔄 Refresh"}
+              </button>
+            </div>
+            {lastRefresh && <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 12 }}>Last synced: {lastRefresh.toLocaleTimeString()}</div>}
             <div className="grid-3 fade-up" style={{ marginBottom: 16 }}>
-              {[["Total Users", users.length, "var(--neon)"], ["Active Today", users.filter(u => u.log.length > 0).length, "#00B8FF"], ["Avg Calories", Math.round(totalCal / (users.length || 1)), "var(--neon2)"]].map(([l, v, c]) => (
+              {[
+                ["Total Users", users.length, "var(--neon)"],
+                ["Active Today", activeToday.length, "#00B8FF"],
+                ["Avg Calories", avgCal || "—", "var(--neon2)"]
+              ].map(([l, v, c]) => (
                 <div key={l} className="card card-3d">
                   <div className="stat-label">{l}</div>
                   <div className="stat-val" style={{ color: c }}>{v}</div>
@@ -1077,16 +1321,38 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
             <div className="card fade-up-d1" style={{ marginBottom: 16 }}>
               <div style={{ fontWeight: 700, marginBottom: 16 }}>All Members</div>
               <div className="flex flex-col gap-8">
-                {users.map(u => (
-                  <div key={u.id} className="user-row" style={{ cursor: "pointer" }} onClick={() => { setSelectedUser(u); setMsgDraft(u.adminMessage || ""); setScreen("users"); }}>
-                    <div className="user-avatar" style={{ background: u.goal === "Weight Gain" ? "linear-gradient(135deg,#00FFB2,#00B8FF)" : "linear-gradient(135deg,#FF3CAC,#7B2FFF)", color: "#000" }}>{u.name[0]}</div>
-                    <div className="user-info">
-                      <div className="user-name">{u.name}</div>
-                      <div className="user-meta">{u.email} · {u.goal}</div>
+                {users.map(u => {
+                  const prog = getCalorieProgress(u);
+                  const active = isActiveToday(u);
+                  const todayLog = getTodayLog(u);
+                  return (
+                    <div key={u.id} className="user-row" style={{ cursor: "pointer", flexDirection: "column", alignItems: "stretch", gap: 10 }}
+                      onClick={() => { setSelectedUser(u); setMsgDraft(u.adminMessage || ""); setScreen("users"); }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div className="user-avatar" style={{ background: u.goal === "Weight Gain" ? "linear-gradient(135deg,#00FFB2,#00B8FF)" : "linear-gradient(135deg,#FF3CAC,#7B2FFF)", color: "#000" }}>{u.name[0]}</div>
+                        <div className="user-info" style={{ flex: 1 }}>
+                          <div className="user-name" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span className="status-dot" style={{ background: active ? "#00FFB2" : "rgba(255,255,255,0.2)", boxShadow: active ? "0 0 6px #00FFB2" : "none" }} />
+                            {u.name}
+                          </div>
+                          <div className="user-meta">{u.email} · {getLastSeen(u)}</div>
+                        </div>
+                        <span className={u.goal === "Weight Gain" ? "goal-gain" : "goal-loss"}>{u.goal === "Weight Gain" ? "⬆ Gain" : "⬇ Loss"}</span>
+                      </div>
+                      {u.caloricTarget && (
+                        <div style={{ paddingLeft: 52 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)", marginBottom: 4 }}>
+                            <span>Daily Target: {todayLog ? `${todayLog.totalCal} / ${u.caloricTarget} kcal` : `0 / ${u.caloricTarget} kcal`}</span>
+                            <span style={{ color: prog >= 100 ? "#00FFB2" : prog >= 60 ? "#00B8FF" : "var(--muted)", fontWeight: 700 }}>{prog}%</span>
+                          </div>
+                          <div className="progress-bar-track">
+                            <div className="progress-bar-fill" style={{ width: `${prog}%`, background: prog >= 100 ? "linear-gradient(90deg,#00FFB2,#00B8FF)" : prog >= 60 ? "linear-gradient(90deg,#00B8FF,#7B2FFF)" : "linear-gradient(90deg,#FF3CAC,#7B2FFF)" }} />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <span className={u.goal === "Weight Gain" ? "goal-gain" : "goal-loss"}>{u.goal === "Weight Gain" ? "⬆ Gain" : "⬇ Loss"}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1095,61 +1361,190 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
         {/* ── USERS ── */}
         {screen === "users" && !selectedUser && (
           <div className="page">
-            <div className="section-title fade-up" style={{ marginBottom: 20 }}>Manage Users 👥</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div className="section-title fade-up">Manage Users 👥</div>
+              <button className="refresh-btn" onClick={refreshUsersFromFirebase} disabled={fbLoading}>
+                {fbLoading ? "⏳ Syncing..." : "🔄 Sync Firebase"}
+              </button>
+            </div>
             <div className="flex flex-col gap-12">
-              {users.map(u => (
-                <div key={u.id} className="card card-3d">
-                  <div className="flex items-center gap-16">
-                    <div className="user-avatar" style={{ background: u.goal === "Weight Gain" ? "linear-gradient(135deg,#00FFB2,#00B8FF)" : "linear-gradient(135deg,#FF3CAC,#7B2FFF)", color: "#000" }}>{u.name[0]}</div>
-                    <div style={{ flex: 1 }}>
-                      <div className="user-name">{u.name}</div>
-                      <div className="user-meta">{u.email} · Joined {u.joined}</div>
+              {users.map(u => {
+                const prog = getCalorieProgress(u);
+                const active = isActiveToday(u);
+                const todayLog = getTodayLog(u);
+                return (
+                  <div key={u.id} className="user-card-full" onClick={() => { setSelectedUser(u); setMsgDraft(u.adminMessage || ""); }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+                      <div className="user-avatar" style={{ background: u.goal === "Weight Gain" ? "linear-gradient(135deg,#00FFB2,#00B8FF)" : "linear-gradient(135deg,#FF3CAC,#7B2FFF)", color: "#000", flexShrink: 0 }}>{u.name[0]}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <div className="user-name">{u.name}</div>
+                          <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: active ? "rgba(0,255,178,0.15)" : "rgba(255,255,255,0.07)", color: active ? "#00FFB2" : "var(--muted)", fontWeight: 700 }}>
+                            {active ? "🟢 Active Today" : "⚪ Inactive"}
+                          </span>
+                        </div>
+                        <div className="user-meta">{u.email} · Joined {u.joined} · Last seen: {getLastSeen(u)}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }} onClick={e => e.stopPropagation()}>
+                        <button className="btn btn-danger btn-sm" onClick={() => removeUser(u.id)}>Remove</button>
+                      </div>
                     </div>
-                    <div className="user-actions">
-                      <button className="btn btn-ghost btn-sm" onClick={() => { setSelectedUser(u); setMsgDraft(u.adminMessage || ""); }}>View →</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => removeUser(u.id)}>Remove</button>
+
+                    {/* Quick stats row */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                      {[
+                        ["⚖️ Weight", `${u.weight || "—"}kg`],
+                        ["🎯 Goal Wt", `${u.goalWeight || "—"}kg`],
+                        ["📏 Height", `${u.height || "—"}cm`],
+                        ["🏃 Goal", u.goal],
+                        ["🔥 Target", u.caloricTarget ? `${u.caloricTarget} kcal` : "Not set"],
+                      ].map(([l, v]) => (
+                        <div key={l} style={{ fontSize: 12, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px 10px" }}>
+                          <span style={{ color: "var(--muted)" }}>{l}: </span>
+                          <span style={{ fontWeight: 700 }}>{v}</span>
+                        </div>
+                      ))}
                     </div>
+
+                    {/* Today's progress */}
+                    {u.caloricTarget ? (
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                          <span style={{ color: "var(--muted)" }}>Today: {todayLog ? `${todayLog.totalCal} kcal eaten` : "Nothing logged yet"}</span>
+                          <span style={{ fontWeight: 700, color: prog >= 100 ? "#00FFB2" : prog >= 60 ? "#00B8FF" : "var(--muted)" }}>{prog}% of daily target</span>
+                        </div>
+                        <div className="progress-bar-track">
+                          <div className="progress-bar-fill" style={{ width: `${prog}%`, background: prog >= 100 ? "linear-gradient(90deg,#00FFB2,#00B8FF)" : prog >= 60 ? "linear-gradient(90deg,#00B8FF,#7B2FFF)" : "linear-gradient(90deg,#FF3CAC,#7B2FFF)" }} />
+                        </div>
+                        {todayLog && (
+                          <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                            {[["Protein", `${todayLog.totalProt}g`, "#00FFB2"], ["Carbs", `${todayLog.totalCarbs}g`, "#00B8FF"], ["Fat", `${todayLog.totalFat}g`, "var(--neon2)"]].map(([n, v, c]) => (
+                              <div key={n} style={{ fontSize: 12 }}><span style={{ color: "var(--muted)" }}>{n}: </span><span style={{ color: c, fontWeight: 700 }}>{v}</span></div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: "var(--muted)", fontStyle: "italic" }}>⚠️ User hasn't completed onboarding yet — no calorie target set</div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
+        {/* ── USER DETAIL ── */}
         {screen === "users" && selectedUser && (
           <div className="page">
             <button className="back-btn" style={{ margin: "0 0 20px" }} onClick={() => setSelectedUser(null)}>← Back to Users</button>
-            <div className="section-title" style={{ marginBottom: 20 }}>{selectedUser.name}</div>
 
-            <div className="grid-2 fade-up" style={{ marginBottom: 16 }}>
-              {[["Email", selectedUser.email], ["Goal", selectedUser.goal], ["Weight", `${selectedUser.weight}kg`], ["Goal Weight", `${selectedUser.goalWeight}kg`], ["Height", `${selectedUser.height}cm`], ["Age", `${selectedUser.age}yrs`], ["Joined", selectedUser.joined]].map(([l, v]) => (
-                <div key={l} className="card"><div className="stat-label">{l}</div><div style={{ fontWeight: 700, marginTop: 4 }}>{v}</div></div>
-              ))}
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+              <div className="user-avatar" style={{ width: 56, height: 56, fontSize: 24, background: selectedUser.goal === "Weight Gain" ? "linear-gradient(135deg,#00FFB2,#00B8FF)" : "linear-gradient(135deg,#FF3CAC,#7B2FFF)", color: "#000", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>{selectedUser.name[0]}</div>
+              <div>
+                <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 28 }}>{selectedUser.name}</div>
+                <div style={{ fontSize: 13, color: "var(--muted)" }}>{selectedUser.email} · Joined {selectedUser.joined}</div>
+                <div style={{ marginTop: 6, display: "flex", gap: 8 }}>
+                  <span className={selectedUser.goal === "Weight Gain" ? "goal-gain" : "goal-loss"}>{selectedUser.goal}</span>
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: isActiveToday(selectedUser) ? "rgba(0,255,178,0.15)" : "rgba(255,255,255,0.07)", color: isActiveToday(selectedUser) ? "#00FFB2" : "var(--muted)", fontWeight: 700 }}>
+                    {isActiveToday(selectedUser) ? "🟢 Active Today" : `⚪ Last seen ${getLastSeen(selectedUser)}`}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Diet log */}
-            <div className="card fade-up-d1" style={{ marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, marginBottom: 12 }}>🗓 Diet Log</div>
-              {selectedUser.log.length === 0 && <div className="text-muted" style={{ fontSize: 13 }}>No logs yet</div>}
-              {selectedUser.log.map((l, i) => (
-                <div key={i} style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{l.date}</div>
-                  <div className="flex gap-12" style={{ flexWrap: "wrap" }}>
-                    {[["Calories", l.totalCal, "var(--neon)"], ["Protein", `${l.totalProt}g`, "#00B8FF"], ["Carbs", `${l.totalCarbs}g`, "var(--neon2)"], ["Fat", `${l.totalFat}g`, "#FF6B35"]].map(([n, v, c]) => (
-                      <div key={n} style={{ fontSize: 13 }}><span style={{ color: "var(--muted)" }}>{n}: </span><span style={{ color: c, fontWeight: 700 }}>{v}</span></div>
-                    ))}
-                  </div>
+            {/* Today's target progress */}
+            {selectedUser.caloricTarget && (
+              <div className="card fade-up" style={{ marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 12 }}>🎯 Today's Target Progress</div>
+                {(() => {
+                  const todayLog = getTodayLog(selectedUser);
+                  const prog = getCalorieProgress(selectedUser);
+                  return (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, color: "var(--muted)" }}>
+                          {todayLog ? `${todayLog.totalCal} / ${selectedUser.caloricTarget} kcal` : `0 / ${selectedUser.caloricTarget} kcal`}
+                        </span>
+                        <span style={{ fontWeight: 700, fontSize: 20, fontFamily: "Bebas Neue, sans-serif", color: prog >= 100 ? "#00FFB2" : prog >= 60 ? "#00B8FF" : "var(--neon2)" }}>{prog}%</span>
+                      </div>
+                      <div className="progress-bar-track" style={{ height: 12 }}>
+                        <div className="progress-bar-fill" style={{ width: `${prog}%`, background: prog >= 100 ? "linear-gradient(90deg,#00FFB2,#00B8FF)" : prog >= 60 ? "linear-gradient(90deg,#00B8FF,#7B2FFF)" : "linear-gradient(90deg,#FF3CAC,#7B2FFF)" }} />
+                      </div>
+                      {todayLog && (
+                        <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "space-around" }}>
+                          {[["🥩 Protein", `${todayLog.totalProt}g`, "#00FFB2"], ["🍚 Carbs", `${todayLog.totalCarbs}g`, "#00B8FF"], ["🧈 Fat", `${todayLog.totalFat}g`, "var(--neon2)"]].map(([n, v, c]) => (
+                            <div key={n} className="macro-pill">
+                              <div className="macro-pill-val" style={{ color: c }}>{v}</div>
+                              <div className="macro-pill-label">{n}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {!todayLog && <div style={{ marginTop: 10, fontSize: 13, color: "var(--muted)", textAlign: "center" }}>No meals logged today</div>}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Stats grid */}
+            <div className="user-detail-grid fade-up">
+              {[
+                ["Age", `${selectedUser.age || "—"} yrs`],
+                ["Height", `${selectedUser.height || "—"} cm`],
+                ["Current Weight", `${selectedUser.weight || "—"} kg`],
+                ["Goal Weight", `${selectedUser.goalWeight || "—"} kg`],
+                ["To Go", selectedUser.weight && selectedUser.goalWeight ? `${Math.abs(selectedUser.goalWeight - selectedUser.weight)} kg` : "—"],
+                ["Daily Target", selectedUser.caloricTarget ? `${selectedUser.caloricTarget} kcal` : "Not set"],
+                ["Activity Level", selectedUser.activity || "Not set"],
+                ["Total Logs", `${(selectedUser.log || []).length} days`],
+              ].map(([l, v]) => (
+                <div key={l} className="user-detail-tile">
+                  <div className="user-detail-label">{l}</div>
+                  <div className="user-detail-val">{v}</div>
                 </div>
               ))}
             </div>
 
+            {/* Full diet log */}
+            <div className="card fade-up-d1" style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, marginBottom: 12 }}>🗓 Full Diet History</div>
+              {(!selectedUser.log || selectedUser.log.length === 0) && <div className="text-muted" style={{ fontSize: 13 }}>No logs yet</div>}
+              {(selectedUser.log || []).slice().sort((a, b) => b.date.localeCompare(a.date)).map((l, i) => {
+                const dayProg = selectedUser.caloricTarget ? Math.min(100, Math.round((l.totalCal / selectedUser.caloricTarget) * 100)) : null;
+                return (
+                  <div key={i} style={{ padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 600 }}>{l.date}{l.date === todayStr() ? " 🟢 Today" : ""}</div>
+                      {dayProg !== null && <span style={{ fontSize: 12, fontWeight: 700, color: dayProg >= 80 ? "#00FFB2" : "#00B8FF" }}>{dayProg}% of target</span>}
+                    </div>
+                    <div className="flex gap-12" style={{ flexWrap: "wrap", marginBottom: 6 }}>
+                      {[["Calories", l.totalCal, "var(--neon)"], ["Protein", `${l.totalProt}g`, "#00B8FF"], ["Carbs", `${l.totalCarbs}g`, "var(--neon2)"], ["Fat", `${l.totalFat}g`, "#FF6B35"]].map(([n, v, c]) => (
+                        <div key={n} style={{ fontSize: 13 }}><span style={{ color: "var(--muted)" }}>{n}: </span><span style={{ color: c, fontWeight: 700 }}>{v}</span></div>
+                      ))}
+                    </div>
+                    {dayProg !== null && (
+                      <div className="progress-bar-track">
+                        <div className="progress-bar-fill" style={{ width: `${dayProg}%`, background: dayProg >= 80 ? "linear-gradient(90deg,#00FFB2,#00B8FF)" : "linear-gradient(90deg,#FF3CAC,#7B2FFF)" }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Send message */}
             <div className="card fade-up-d2">
-              <div style={{ fontWeight: 700, marginBottom: 12 }}>💬 Send Personal Message</div>
-              <textarea className="input" placeholder="Write diet tips, motivation, or instructions..." value={msgDraft} onChange={e => setMsgDraft(e.target.value)} />
+              <div style={{ fontWeight: 700, marginBottom: 12 }}>💬 Send Personal Message to {selectedUser.name.split(" ")[0]}</div>
+              {selectedUser.adminMessage && (
+                <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8, fontStyle: "italic" }}>Current message: "{selectedUser.adminMessage}"</div>
+              )}
+              <textarea className="input" rows={3} placeholder="Write diet tips, motivation, or instructions..." value={msgDraft} onChange={e => setMsgDraft(e.target.value)} style={{ minHeight: 80 }} />
               <div className="flex gap-12 mt-12">
-                <button className="btn btn-primary" onClick={sendMessage}>Send to {selectedUser.name.split(" ")[0]} →</button>
-                {msgSent && <div className="alert alert-success" style={{ flex: 1 }}>✓ Message sent!</div>}
+                <button className="btn btn-primary" onClick={sendMessage}>Send Message →</button>
+                {msgSent && <div className="alert alert-success" style={{ flex: 1 }}>✓ Message saved to Firebase!</div>}
               </div>
             </div>
           </div>
@@ -1175,7 +1570,7 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
                 </div>
               </div>
               {addErr && <div className="alert alert-error mt-16">{addErr}</div>}
-              {addOk && <div className="alert alert-success mt-16">✓ User added successfully!</div>}
+              {addOk && <div className="alert alert-success mt-16">✓ User added to Firebase!</div>}
               <button className="btn btn-primary btn-full mt-16" onClick={addUser}>Add User →</button>
             </div>
           </div>
@@ -1206,34 +1601,74 @@ function AdminDashboard({ onLogout, allUsers: initialUsers, registeredUsers, set
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function FitFuelApp() {
-  const [auth, setAuth] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [auth, setAuth] = useState(() => {
+    try { const s = localStorage.getItem("samfit_auth"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const [userData, setUserData] = useState(() => {
+    try { const s = localStorage.getItem("samfit_user"); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
   const [needsOnboard, setNeedsOnboard] = useState(false);
-  const [registeredUsers, setRegisteredUsers] = useState([]); // users who signed up in-session
+  const [registeredUsers, setRegisteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  function handleRegister(newUser) {
-    setRegisteredUsers(prev => [...prev, newUser]);
+  // Load all users from Firebase on startup
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const snapshot = await getDocs(collection(db, "users"));
+        const users = snapshot.docs.map(d => d.data());
+        setRegisteredUsers(users);
+      } catch(e) { console.log("Firebase load error", e); }
+      setLoading(false);
+    }
+    loadUsers();
+  }, []);
+
+  async function handleRegister(newUser) {
+    try {
+      await setDoc(doc(db, "users", newUser.id), newUser);
+      setRegisteredUsers(prev => [...prev, newUser]);
+    } catch(e) { console.log("Firebase save error", e); }
   }
 
   function handleLogin(res) {
-    if (res.type === "admin") { setAuth({ type: "admin" }); return; }
+    if (res.type === "admin") {
+      setAuth({ type: "admin" });
+      try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "admin" })); } catch {}
+      return;
+    }
     const u = res.data;
-    if (!u.caloricTarget) { setAuth({ type: "user", data: u }); setNeedsOnboard(true); }
-    else { setAuth({ type: "user", data: u }); setUserData(u); }
+    setAuth({ type: "user", data: u });
+    try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "user", data: u })); } catch {}
+    if (!u.caloricTarget) { setNeedsOnboard(true); }
+    else { setUserData(u); try { localStorage.setItem("samfit_user", JSON.stringify(u)); } catch {} }
   }
 
-  function handleOnboard(form) {
+  async function handleOnboard(form) {
     const u = { ...auth.data, ...form };
-    // Update registered users list so admin can see updated info
-    setRegisteredUsers(prev => prev.map(x => x.id === u.id ? u : x));
+    try {
+      await setDoc(doc(db, "users", u.id), u);
+      setRegisteredUsers(prev => prev.map(x => x.id === u.id ? u : x));
+    } catch(e) {}
     setAuth({ type: "user", data: u });
     setUserData(u);
     setNeedsOnboard(false);
+    try { localStorage.setItem("samfit_auth", JSON.stringify({ type: "user", data: u })); localStorage.setItem("samfit_user", JSON.stringify(u)); } catch {}
   }
 
-  function handleLogout() { setAuth(null); setUserData(null); setNeedsOnboard(false); }
+  function handleLogout() {
+    setAuth(null); setUserData(null); setNeedsOnboard(false);
+    try { localStorage.removeItem("samfit_auth"); localStorage.removeItem("samfit_user"); } catch {}
+  }
 
-  const allUsers = [...DEMO_USERS, ...registeredUsers];
+  const allUsers = [...DEMO_USERS, ...registeredUsers.filter(u => !DEMO_USERS.find(d => d.id === u.id))];
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#080C14", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+      <div style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 48, background: "linear-gradient(135deg,#00FFB2,#7B2FFF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>SAMFIT</div>
+      <div style={{ color: "#00FFB2", fontSize: 14 }}>Loading...</div>
+    </div>
+  );
 
   if (!auth) return (
     <div className="app">
@@ -1245,7 +1680,7 @@ export default function FitFuelApp() {
     </div>
   );
 
-  if (auth.type === "admin") return <AdminDashboard onLogout={handleLogout} allUsers={allUsers} registeredUsers={registeredUsers} setRegisteredUsers={setRegisteredUsers} />;
+  if (auth.type === "admin") return <AdminDashboard onLogout={handleLogout} allUsers={allUsers} registeredUsers={registeredUsers} setRegisteredUsers={setRegisteredUsers} db={db} />;
 
   if (needsOnboard) return (
     <div className="app">
@@ -1257,5 +1692,5 @@ export default function FitFuelApp() {
     </div>
   );
 
-  return <UserDashboard user={userData || auth.data} setUser={setUserData} onLogout={handleLogout} />;
+  return <UserDashboard user={userData || auth.data} setUser={setUserData} onLogout={handleLogout} db={db} />;
 }
